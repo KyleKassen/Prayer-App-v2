@@ -3,10 +3,13 @@ import { View, Text, TextInput, Pressable, Alert } from 'react-native';
 import { Stack, Link, router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
+import { useAuth } from '../../context/AuthContext';
+
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { signInAnonymously } = useAuth();
 
   async function signInWithEmail() {
     setLoading(true);
@@ -17,6 +20,15 @@ export default function SignIn() {
 
     if (error) Alert.alert(error.message);
     setLoading(false);
+  }
+
+  async function handleGuestSignIn() {
+    try {
+      await signInAnonymously();
+      router.replace('/(tabs)');
+    } catch (error) {
+      Alert.alert('Error signing in as guest');
+    }
   }
 
   return (
@@ -54,6 +66,14 @@ export default function SignIn() {
         className={`mt-8 bg-primary p-4 rounded-xl items-center ${loading ? 'opacity-50' : ''}`}
       >
         <Text className="text-white font-bold text-lg">Sign In</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={handleGuestSignIn}
+        disabled={loading}
+        className="mt-4 p-4 rounded-xl items-center border border-slate-200"
+      >
+        <Text className="text-slate-600 font-bold text-lg">Continue as Guest</Text>
       </Pressable>
 
       <View className="mt-6 flex-row justify-center">

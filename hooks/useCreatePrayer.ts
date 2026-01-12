@@ -1,23 +1,25 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { router } from 'expo-router';
+import { useAuth } from '../context/AuthContext';
+import { GuestStorage } from '../lib/guestStorage';
 
 export function useCreatePrayer() {
   const queryClient = useQueryClient();
+  const { isGuest } = useAuth();
 
   return useMutation({
-    mutationFn: async ({ content, isAnonymous, orgId }: { content: string; isAnonymous: boolean; orgId: string }) => {
+    mutationFn: async ({ content, isAnonymous, orgId }: { content: string; isAnonymous: boolean; orgId: string | null }) => {
+      if (isGuest) {
+        return GuestStorage.savePrayer(content, isAnonymous);
+      }
+
       const { data, error } = await supabase
         .from('prayers')
         .insert({
           content,
           is_anonymous: isAnonymous,
-          organization_id: orgId,
-          // user_id is handled by RLS/Supabase Auth automatically if default?
-          // Schema says user_id is NOT NULL and references profiles.
-          // RLS policy 'Insert prayers in same organization' checks auth.uid() = user_id.
-          // So we MUST send user_id or have a trigger/default.
-          // Since I didn't set default auth.uid() in schema, I must send it.
+          organization_id: orgId || null,
           user_id: (await supabase.auth.getUser()).data.user?.id,
         })
         .select()

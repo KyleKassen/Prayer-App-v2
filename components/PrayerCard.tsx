@@ -17,7 +17,16 @@ export function PrayerCard({ prayer, onPray }: { prayer: Prayer; onPray: () => v
   const authorName = prayer.is_anonymous ? 'Anonymous' : prayer.profiles?.full_name || 'Unknown';
 
   return (
-    <View className="bg-white p-5 rounded-2xl shadow-sm mb-4 border border-slate-100">
+    <View
+      style={{
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 2
+      }}
+      className="bg-white p-5 rounded-2xl mb-4 border border-slate-100"
+    >
       <View className="flex-row justify-between items-start mb-3">
         <Text className="font-bold text-slate-900">{authorName}</Text>
         <Text className="text-xs text-slate-400">
@@ -32,7 +41,10 @@ export function PrayerCard({ prayer, onPray }: { prayer: Prayer; onPray: () => v
       <View className="flex-row justify-end">
         <Pressable
           onPress={onPray}
-          className="flex-row items-center bg-slate-50 px-4 py-2 rounded-full border border-slate-200 active:bg-slate-100"
+          style={({ pressed }) => ({
+            backgroundColor: pressed ? '#f1f5f9' : '#f8fafc'
+          })}
+          className="flex-row items-center px-4 py-2 rounded-full border border-slate-200"
         >
           <Text className="text-indigo-600 font-medium mr-2">🙏 Pray</Text>
           <Text className="text-slate-600 font-bold">{prayer.prayer_count}</Text>

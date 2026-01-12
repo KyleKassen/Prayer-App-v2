@@ -41,7 +41,7 @@ create policy "Users can update own profile"
 create table public.prayers (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.profiles not null,
-  organization_id uuid references public.organizations not null,
+  organization_id uuid references public.organizations,
   content text not null,
   is_anonymous boolean default false,
   prayer_count integer default 0,
@@ -50,21 +50,22 @@ create table public.prayers (
 
 alter table public.prayers enable row level security;
 
-create policy "View prayers in same organization"
+create policy "View prayers in same organization or own"
   on public.prayers for select
   using (
-    organization_id in (
+    (organization_id is not null and organization_id in (
       select organization_id from public.profiles where id = auth.uid()
-    )
+    ))
+    or user_id = auth.uid()
   );
 
-create policy "Insert prayers in same organization"
+create policy "Insert prayers in same organization or personal"
   on public.prayers for insert
   with check (
-    organization_id in (
+    (organization_id is not null and organization_id in (
       select organization_id from public.profiles where id = auth.uid()
-    )
-    and user_id = auth.uid()
+    ))
+    or (organization_id is null and user_id = auth.uid())
   );
 
 -- Indexes
